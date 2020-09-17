@@ -48,7 +48,7 @@ router.get('/:id', (req, res) => {
 		.first()
 		.then(account => {
 			if (account) {
-				res.status(200).json({ message: 'Success in retrieving ID', account });
+				res.status(200).json({ message: 'Success in retrieving Account', account });
 			} else {
 				res.status(404).json({ message: 'ID could not be found' });
 			}
@@ -58,21 +58,23 @@ router.get('/:id', (req, res) => {
 //UPDATE
 //#################################################################################
 
-router.patch('/:id', (req, res) => {
+router.patch('/:id', async (req, res) => {
+	const { id } = req.params;
 	const changes = req.body;
-	const { id } = req.params.id;
-	db('accounts').where({ id }).update *
-		changes
-			.then(num => {
-				if (num > 0) {
-					res.status(200).json({ message: 'The account is updated', num });
-				} else {
-					res.status(404).json({ message: 'The account was not updated' });
-				}
-			})
-			.catch(error => {
-				res.status(500).json({ message: 'There was an error, try again!', error });
-			});
+
+	try {
+		const count = await db('accounts')
+			.update(changes)
+			.where({ id });
+		if (count) {
+			res.json({ message: 'the account was successfully updated', count });
+		} else {
+			res.status(404).json({ message: 'The account was not updated' });
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({ message: 'There was an error updating your account', err });
+	}
 });
 
 //#################################################################################
